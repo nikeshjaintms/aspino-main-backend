@@ -49,4 +49,17 @@ export class UserRepository {
       orderBy: { createdAt: 'desc' },
     });
   }
+
+  async update(id: number, data: Prisma.UserUpdateInput): Promise<User> {
+    return this.prisma.user.update({
+      where: { id },
+      data,
+    });
+  }
+
+  async delete(id: number): Promise<User> {
+    return this.prisma.user.delete({
+      where: { id },
+    });
+  }
 }
