@@ -65,7 +65,7 @@ export class AuthService {
   /**
    * Change Password (for logged-in Admin)
    */
-  async changePassword(userId: number, changePasswordDto: ChangePasswordDto) {
+  async changePassword(userId: string, changePasswordDto: ChangePasswordDto) {
     const { currentPassword, newPassword } = changePasswordDto;
 
     const user = await this.userRepository.findById(userId);

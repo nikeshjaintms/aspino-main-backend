@@ -12,7 +12,7 @@ export class UserRepository {
     });
   }
 
-  async findById(id: number): Promise<User | null> {
+  async findById(id: string): Promise<User | null> {
     return this.prisma.user.findUnique({
       where: { id },
     });
@@ -27,7 +27,7 @@ export class UserRepository {
     });
   }
 
-  async updatePassword(id: number, hashedPassword: string): Promise<User> {
+  async updatePassword(id: string, hashedPassword: string): Promise<User> {
     return this.prisma.user.update({
       where: { id },
       data: { password: hashedPassword },
@@ -50,14 +50,14 @@ export class UserRepository {
     });
   }
 
-  async update(id: number, data: Prisma.UserUpdateInput): Promise<User> {
+  async update(id: string, data: Prisma.UserUpdateInput): Promise<User> {
     return this.prisma.user.update({
       where: { id },
       data,
     });
   }
 
-  async delete(id: number): Promise<User> {
+  async delete(id: string): Promise<User> {
     return this.prisma.user.delete({
       where: { id },
     });

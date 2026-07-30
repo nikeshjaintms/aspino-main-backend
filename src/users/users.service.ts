@@ -12,7 +12,7 @@ export class UsersService {
     return this.userRepository.findByEmail(email);
   }
 
-  async findById(id: number): Promise<User | null> {
+  async findById(id: string): Promise<User | null> {
     return this.userRepository.findById(id);
   }
 
@@ -28,14 +28,14 @@ export class UsersService {
     return this.userRepository.findAll();
   }
 
-  async updateUser(id: number, data: Prisma.UserUpdateInput): Promise<User> {
+  async updateUser(id: string, data: Prisma.UserUpdateInput): Promise<User> {
     if (data.password && typeof data.password === 'string') {
       data.password = await bcrypt.hash(data.password, 10);
     }
     return this.userRepository.update(id, data);
   }
 
-  async deleteUser(id: number): Promise<User> {
+  async deleteUser(id: string): Promise<User> {
     return this.userRepository.delete(id);
   }
 }
