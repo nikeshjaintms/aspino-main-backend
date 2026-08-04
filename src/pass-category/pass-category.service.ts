@@ -68,61 +68,77 @@ export class PassCategoryService {
       ];
     }
 
-    if (!page && !limit) {
-      return this.prisma.passCategory.findMany({
+    try {
+      if (!page && !limit) {
+        return await this.prisma.passCategory.findMany({
+          where,
+          orderBy: { createdAt: 'desc' },
+        });
+      }
+
+      const total = await this.prisma.passCategory.count({ where });
+      const take = limit ? Number(limit) : undefined;
+      const skip = page && limit ? (Number(page) - 1) * Number(limit) : undefined;
+
+      const data = await this.prisma.passCategory.findMany({
         where,
         orderBy: { createdAt: 'desc' },
+        skip,
+        take,
       });
+
+      const parsedPage = page ? Number(page) : 1;
+      const parsedLimit = limit ? Number(limit) : total || 10;
+      const totalPages = Math.ceil(total / parsedLimit) || 1;
+
+      // Compute dynamic tab counts based on current search query (ignoring the active tab type filter)
+      const countWhere: any = {};
+      if (search) {
+        countWhere.OR = [
+          { name: { contains: search, mode: 'insensitive' } },
+          { code: { contains: search, mode: 'insensitive' } },
+          { description: { contains: search, mode: 'insensitive' } },
+        ];
+      }
+
+      const totalInward = await this.prisma.passCategory.count({
+        where: {
+          ...countWhere,
+          type: 'INWARD',
+        },
+      });
+
+      const totalOutward = await this.prisma.passCategory.count({
+        where: {
+          ...countWhere,
+          type: 'OUTWARD',
+        },
+      });
+
+      return {
+        data,
+        total,
+        totalInward,
+        totalOutward,
+        page: parsedPage,
+        limit: parsedLimit,
+        totalPages,
+      };
+    } catch (err) {
+      console.error('Error in PassCategoryService.findAll:', err);
+      if (!page && !limit) {
+        return [];
+      }
+      return {
+        data: [],
+        total: 0,
+        totalInward: 0,
+        totalOutward: 0,
+        page: 1,
+        limit: 10,
+        totalPages: 1,
+      };
     }
-
-    const total = await this.prisma.passCategory.count({ where });
-    const take = limit ? Number(limit) : undefined;
-    const skip = page && limit ? (Number(page) - 1) * Number(limit) : undefined;
-
-    const data = await this.prisma.passCategory.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-      skip,
-      take,
-    });
-
-    const parsedPage = page ? Number(page) : 1;
-    const parsedLimit = limit ? Number(limit) : total || 10;
-    const totalPages = Math.ceil(total / parsedLimit) || 1;
-
-    // Compute dynamic tab counts based on current search query (ignoring the active tab type filter)
-    const countWhere: any = {};
-    if (search) {
-      countWhere.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { code: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
-      ];
-    }
-
-    const totalInward = await this.prisma.passCategory.count({
-      where: {
-        ...countWhere,
-        type: 'INWARD',
-      },
-    });
-
-    const totalOutward = await this.prisma.passCategory.count({
-      where: {
-        ...countWhere,
-        type: 'OUTWARD',
-      },
-    });
-
-    return {
-      data,
-      total,
-      totalInward,
-      totalOutward,
-      page: parsedPage,
-      limit: parsedLimit,
-      totalPages,
-    };
   }
 
   async findOne(id: number) {

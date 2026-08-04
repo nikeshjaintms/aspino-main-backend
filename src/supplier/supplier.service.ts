@@ -81,71 +81,85 @@ export class SupplierService {
       ];
     }
 
-    if (!page && !limit) {
-      return this.prisma.supplier.findMany({
+    try {
+      if (!page && !limit) {
+        return this.prisma.supplier.findMany({
+          where,
+          include: {
+            bank: true,
+          },
+          orderBy: { createdAt: 'desc' },
+        });
+      }
+
+      const total = await this.prisma.supplier.count({ where });
+      const take = limit ? Number(limit) : undefined;
+      const skip = page && limit ? (Number(page) - 1) * Number(limit) : undefined;
+
+      const data = await this.prisma.supplier.findMany({
         where,
         include: {
           bank: true,
         },
         orderBy: { createdAt: 'desc' },
+        skip,
+        take,
       });
+
+      const parsedPage = page ? Number(page) : 1;
+      const parsedLimit = limit ? Number(limit) : total || 10;
+      const totalPages = Math.ceil(total / parsedLimit) || 1;
+
+      // Calculate aggregated metrics matching search filter
+      const totalApproved = await this.prisma.supplier.count({
+        where: {
+          ...where,
+          approvalStatus: 'Approved',
+        },
+      });
+
+      const aggregateResult = await this.prisma.supplier.aggregate({
+        where,
+        _avg: {
+          rating: true,
+        },
+      });
+      const averageRating = aggregateResult._avg.rating ?? 5.0;
+
+      const allMatchedCategories = await this.prisma.supplier.findMany({
+        where,
+        select: {
+          approvedCategories: true,
+        },
+      });
+      const uniqueCategories = new Set(
+        allMatchedCategories.flatMap((s) => s.approvedCategories),
+      );
+      const totalCategoriesCount = uniqueCategories.size;
+
+      return {
+        data,
+        total,
+        totalApproved,
+        averageRating,
+        totalCategoriesCount,
+        page: parsedPage,
+        limit: parsedLimit,
+        totalPages,
+      };
+    } catch (err) {
+      console.error('Error in SupplierService.findAll:', err);
+      return {
+        data: [],
+        total: 0,
+        totalApproved: 0,
+        averageRating: 5.0,
+        totalCategoriesCount: 0,
+        page: 1,
+        limit: 10,
+        totalPages: 1,
+      };
     }
-
-    const total = await this.prisma.supplier.count({ where });
-    const take = limit ? Number(limit) : undefined;
-    const skip = page && limit ? (Number(page) - 1) * Number(limit) : undefined;
-
-    const data = await this.prisma.supplier.findMany({
-      where,
-      include: {
-        bank: true,
-      },
-      orderBy: { createdAt: 'desc' },
-      skip,
-      take,
-    });
-
-    const parsedPage = page ? Number(page) : 1;
-    const parsedLimit = limit ? Number(limit) : total || 10;
-    const totalPages = Math.ceil(total / parsedLimit) || 1;
-
-    // Calculate aggregated metrics matching search filter
-    const totalApproved = await this.prisma.supplier.count({
-      where: {
-        ...where,
-        approvalStatus: 'Approved',
-      },
-    });
-
-    const aggregateResult = await this.prisma.supplier.aggregate({
-      where,
-      _avg: {
-        rating: true,
-      },
-    });
-    const averageRating = aggregateResult._avg.rating ?? 5.0;
-
-    const allMatchedCategories = await this.prisma.supplier.findMany({
-      where,
-      select: {
-        approvedCategories: true,
-      },
-    });
-    const uniqueCategories = new Set(
-      allMatchedCategories.flatMap((s) => s.approvedCategories),
-    );
-    const totalCategoriesCount = uniqueCategories.size;
-
-    return {
-      data,
-      total,
-      totalApproved,
-      averageRating,
-      totalCategories: totalCategoriesCount,
-      page: parsedPage,
-      limit: parsedLimit,
-      totalPages,
-    };
   }
 
   async findOne(id: number) {

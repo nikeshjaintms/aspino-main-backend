@@ -44,56 +44,72 @@ export class BankService {
       where.name = { contains: search, mode: 'insensitive' };
     }
 
-    if (!page && !limit) {
-      return this.prisma.bank.findMany({
+    try {
+      if (!page && !limit) {
+        return await this.prisma.bank.findMany({
+          where,
+          orderBy: { name: 'asc' },
+        });
+      }
+
+      const total = await this.prisma.bank.count({ where });
+      const take = limit ? Number(limit) : undefined;
+      const skip = page && limit ? (Number(page) - 1) * Number(limit) : undefined;
+
+      const data = await this.prisma.bank.findMany({
         where,
         orderBy: { name: 'asc' },
+        skip,
+        take,
       });
+
+      const parsedPage = page ? Number(page) : 1;
+      const parsedLimit = limit ? Number(limit) : total || 10;
+      const totalPages = Math.ceil(total / parsedLimit) || 1;
+
+      const countWhere: any = {};
+      if (search) {
+        countWhere.name = { contains: search, mode: 'insensitive' };
+      }
+
+      const totalActive = await this.prisma.bank.count({
+        where: {
+          ...countWhere,
+          isActive: true,
+        },
+      });
+
+      const totalInactive = await this.prisma.bank.count({
+        where: {
+          ...countWhere,
+          isActive: false,
+        },
+      });
+
+      return {
+        data,
+        total,
+        totalActive,
+        totalInactive,
+        page: parsedPage,
+        limit: parsedLimit,
+        totalPages,
+      };
+    } catch (err) {
+      console.error('Error in BankService.findAll:', err);
+      if (!page && !limit) {
+        return [];
+      }
+      return {
+        data: [],
+        total: 0,
+        totalActive: 0,
+        totalInactive: 0,
+        page: 1,
+        limit: 10,
+        totalPages: 1,
+      };
     }
-
-    const total = await this.prisma.bank.count({ where });
-    const take = limit ? Number(limit) : undefined;
-    const skip = page && limit ? (Number(page) - 1) * Number(limit) : undefined;
-
-    const data = await this.prisma.bank.findMany({
-      where,
-      orderBy: { name: 'asc' },
-      skip,
-      take,
-    });
-
-    const parsedPage = page ? Number(page) : 1;
-    const parsedLimit = limit ? Number(limit) : total || 10;
-    const totalPages = Math.ceil(total / parsedLimit) || 1;
-
-    const countWhere: any = {};
-    if (search) {
-      countWhere.name = { contains: search, mode: 'insensitive' };
-    }
-
-    const totalActive = await this.prisma.bank.count({
-      where: {
-        ...countWhere,
-        isActive: true,
-      },
-    });
-
-    const totalInactive = await this.prisma.bank.count({
-      where: {
-        ...countWhere,
-        isActive: false,
-      },
-    });
-
-    return {
-      data,
-      total,
-      totalActive,
-      totalInactive,
-      page: parsedPage,
-      limit: parsedLimit,
-      totalPages,
-    };
   }
 
   async findOne(id: number) {

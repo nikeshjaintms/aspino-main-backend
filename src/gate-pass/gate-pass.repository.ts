@@ -45,59 +45,72 @@ export class GatePassRepository {
       ];
     }
 
-    const total = await this.prisma.gatePass.count({ where });
+    try {
+      const total = await this.prisma.gatePass.count({ where });
 
-    const countWhere: Prisma.GatePassWhereInput = {};
-    if (search) {
-      countWhere.OR = [
-        { passNumber: { contains: search, mode: 'insensitive' } },
-        { vehicleNumber: { contains: search, mode: 'insensitive' } },
-        { driverName: { contains: search, mode: 'insensitive' } },
-        { supplierSource: { contains: search, mode: 'insensitive' } },
-        { poNumber: { contains: search, mode: 'insensitive' } },
-        { invoiceNumber: { contains: search, mode: 'insensitive' } },
-        { category: { name: { contains: search, mode: 'insensitive' } } },
-      ];
+      const countWhere: Prisma.GatePassWhereInput = {};
+      if (search) {
+        countWhere.OR = [
+          { passNumber: { contains: search, mode: 'insensitive' } },
+          { vehicleNumber: { contains: search, mode: 'insensitive' } },
+          { driverName: { contains: search, mode: 'insensitive' } },
+          { supplierSource: { contains: search, mode: 'insensitive' } },
+          { poNumber: { contains: search, mode: 'insensitive' } },
+          { invoiceNumber: { contains: search, mode: 'insensitive' } },
+          { category: { name: { contains: search, mode: 'insensitive' } } },
+        ];
+      }
+
+      const totalInward = await this.prisma.gatePass.count({
+        where: {
+          ...countWhere,
+          type: 'INWARD',
+        },
+      });
+
+      const totalOutward = await this.prisma.gatePass.count({
+        where: {
+          ...countWhere,
+          type: 'OUTWARD',
+        },
+      });
+
+      const take = limit ? Number(limit) : undefined;
+      const skip = page && limit ? (Number(page) - 1) * Number(limit) : undefined;
+
+      const data = await this.prisma.gatePass.findMany({
+        where,
+        include: { category: true },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take,
+      });
+
+      const parsedPage = page ? Number(page) : 1;
+      const parsedLimit = limit ? Number(limit) : total || 10;
+      const totalPages = Math.ceil(total / parsedLimit) || 1;
+
+      return {
+        data,
+        total,
+        totalInward,
+        totalOutward,
+        page: parsedPage,
+        limit: parsedLimit,
+        totalPages,
+      };
+    } catch (err) {
+      console.error('Error in GatePassRepository.findAll:', err);
+      return {
+        data: [],
+        total: 0,
+        totalInward: 0,
+        totalOutward: 0,
+        page: 1,
+        limit: 10,
+        totalPages: 1,
+      };
     }
-
-    const totalInward = await this.prisma.gatePass.count({
-      where: {
-        ...countWhere,
-        type: 'INWARD',
-      },
-    });
-
-    const totalOutward = await this.prisma.gatePass.count({
-      where: {
-        ...countWhere,
-        type: 'OUTWARD',
-      },
-    });
-
-    const take = limit ? Number(limit) : undefined;
-    const skip = page && limit ? (Number(page) - 1) * Number(limit) : undefined;
-
-    const data = await this.prisma.gatePass.findMany({
-      where,
-      include: { category: true },
-      orderBy: { createdAt: 'desc' },
-      skip,
-      take,
-    });
-
-    const parsedPage = page ? Number(page) : 1;
-    const parsedLimit = limit ? Number(limit) : total || 10;
-    const totalPages = Math.ceil(total / parsedLimit) || 1;
-
-    return {
-      data,
-      total,
-      totalInward,
-      totalOutward,
-      page: parsedPage,
-      limit: parsedLimit,
-      totalPages,
-    };
   }
 
   async findById(id: number): Promise<GatePass | null> {
