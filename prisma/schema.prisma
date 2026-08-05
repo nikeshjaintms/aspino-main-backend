@@ -413,13 +413,22 @@ model DepartmentLeaveMaster {
 }
 
 model ActivityLog {
-  id        String   @id @default(uuid())
-  action    String
-  entity    String
-  entityId  String?
-  userName  String?
-  userEmail String?
-  details   String?
-  ipAddress String?
-  createdAt DateTime @default(now())
+  id           String   @id @default(uuid())
+  userId       String?  // The user ID who performed the action, null if guest/system
+  userEmail    String?  // User email
+  userName     String?  // User name
+  userRole     String?  // User role
+  action       String   // e.g. "CREATE_GATE_PASS", "LOGIN", "DELETE_USER"
+  entityType   String?  // e.g. "GatePass", "User", "PassCategory"
+  entityId     String?  // ID of the target resource
+  method       String   // GET, POST, PUT, PATCH, DELETE
+  url          String   // request url path
+  ip           String?  // IP address of the client
+  userAgent    String?  // User agent
+  statusCode   Int      // HTTP response status code
+  requestBody  Json?    // Serialized request body (sanitized)
+  queryParams  Json?    // Serialized query params
+  routeParams  Json?    // Serialized route parameters
+  responseBody Json?    // Serialized response body (sanitized, omitted if too large)
+  createdAt    DateTime @default(now())
 }

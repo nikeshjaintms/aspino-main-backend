@@ -8,6 +8,7 @@ import { GatePassModule } from './gate-pass/gate-pass.module';
 import { PassCategoryModule } from './pass-category/pass-category.module';
 import { BankModule } from './bank/bank.module';
 import { SupplierModule } from './supplier/supplier.module';
+import { AuditLogModule } from './audit-log/audit-log.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { SupplierModule } from './supplier/supplier.module';
     PassCategoryModule,
     BankModule,
     SupplierModule,
+    AuditLogModule,
   ],
   controllers: [AppController],
   providers: [AppService],
