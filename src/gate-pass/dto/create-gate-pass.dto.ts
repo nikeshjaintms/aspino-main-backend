@@ -4,7 +4,7 @@ import {
   IsOptional,
   IsString,
   IsBoolean,
-  IsNumber,
+  IsUUID,
   MinLength,
   MaxLength,
   Matches,
@@ -22,9 +22,9 @@ export class CreateGatePassDto {
   @IsNotEmpty({ message: 'Gate pass type is required' })
   type: GatePassType;
 
-  @IsNumber()
+  @IsUUID('4', { message: 'Category ID must be a valid UUID' })
   @IsNotEmpty({ message: 'Pass category ID is required' })
-  categoryId: number;
+  categoryId: string;
 
   @IsString()
   @IsNotEmpty({ message: 'Vehicle number is required' })

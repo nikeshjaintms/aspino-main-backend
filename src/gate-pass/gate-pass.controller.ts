@@ -5,7 +5,7 @@ import {
   Body,
   Param,
   Query,
-  ParseIntPipe,
+  ParseUUIDPipe,
   Patch,
   Res,
 } from '@nestjs/common';
@@ -36,7 +36,7 @@ export class GatePassController {
 
   @Get(':id/pdf')
   async downloadPdf(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
     @Res() res: Response,
   ) {
     const pdfBuffer = await this.service.generateGatePassPdfBuffer(id);
@@ -52,18 +52,18 @@ export class GatePassController {
   }
 
   @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number) {
+  async findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.service.getGatePassById(id);
   }
 
   @Patch(':id/timeout')
-  async recordTimeOut(@Param('id', ParseIntPipe) id: number) {
+  async recordTimeOut(@Param('id', ParseUUIDPipe) id: string) {
     return this.service.recordTimeOut(id);
   }
 
   @Patch(':id/link-grn-po')
   async linkGrnPo(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body('poNumber') poNumber?: string,
     @Body('grnNumber') grnNumber?: string,
   ) {

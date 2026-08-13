@@ -4,7 +4,7 @@ import {
   NotFoundException,
   Logger,
 } from '@nestjs/common';
-import { GatePassRepository } from './gate-pass.repository';
+import { GatePassRepository } from './repositories/gate-pass.repository';
 import { CreateGatePassDto, GatePassType } from './dto/create-gate-pass.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { GatePassPdfService } from './gate-pass-pdf.service';
@@ -90,7 +90,7 @@ export class GatePassService {
     return this.repository.findAll(type, search, page, limit);
   }
 
-  async getGatePassById(id: number) {
+  async getGatePassById(id: string) {
     const pass = await this.repository.findById(id);
     if (!pass) {
       throw new NotFoundException(`Gate pass with ID ${id} not found.`);
@@ -98,7 +98,7 @@ export class GatePassService {
     return pass;
   }
 
-  async recordTimeOut(id: number) {
+  async recordTimeOut(id: string) {
     const pass = await this.repository.findById(id);
     if (!pass) {
       throw new NotFoundException(`Gate pass with ID ${id} not found.`);
@@ -109,12 +109,12 @@ export class GatePassService {
     return this.repository.markTimeOut(id);
   }
 
-  async linkGrnPo(id: number, poNumber?: string, grnNumber?: string) {
+  async linkGrnPo(id: string, poNumber?: string, grnNumber?: string) {
     return this.repository.linkGrnPo(id, poNumber, grnNumber);
   }
 
   // Delegate PDF Generation to GatePassPdfService
-  async generateGatePassPdfBuffer(id: number): Promise<Buffer> {
+  async generateGatePassPdfBuffer(id: string): Promise<Buffer> {
     const pass = await this.getGatePassById(id);
     return this.pdfService.generateGatePassPdfBuffer(pass);
   }

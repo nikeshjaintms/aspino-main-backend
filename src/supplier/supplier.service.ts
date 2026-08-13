@@ -162,7 +162,7 @@ export class SupplierService {
     }
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     const supplier = await this.prisma.supplier.findUnique({
       where: { id },
       include: {
@@ -175,7 +175,7 @@ export class SupplierService {
     return supplier;
   }
 
-  async update(id: number, dto: UpdateSupplierDto) {
+  async update(id: string, dto: UpdateSupplierDto) {
     await this.findOne(id);
 
     if (dto.code) {
@@ -241,7 +241,7 @@ export class SupplierService {
     };
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     await this.findOne(id);
     await this.prisma.supplier.delete({
       where: { id },

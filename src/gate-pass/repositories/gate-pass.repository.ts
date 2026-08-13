@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { GatePass, GatePassStatus, Prisma } from '@prisma/client';
 
 @Injectable()
@@ -113,14 +113,14 @@ export class GatePassRepository {
     }
   }
 
-  async findById(id: number): Promise<GatePass | null> {
+  async findById(id: string): Promise<GatePass | null> {
     return this.prisma.gatePass.findUnique({
       where: { id },
       include: { category: true },
     });
   }
 
-  async markTimeOut(id: number): Promise<GatePass> {
+  async markTimeOut(id: string): Promise<GatePass> {
     return this.prisma.gatePass.update({
       where: { id },
       data: {
@@ -132,7 +132,7 @@ export class GatePassRepository {
   }
 
   async linkGrnPo(
-    id: number,
+    id: string,
     poNumber?: string,
     grnNumber?: string,
   ): Promise<GatePass> {

@@ -7,7 +7,7 @@ import {
   Param,
   Delete,
   Query,
-  ParseIntPipe,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { PassCategoryService } from './pass-category.service';
 import { CreatePassCategoryDto } from './dto/create-pass-category.dto';
@@ -40,20 +40,20 @@ export class PassCategoryController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.passCategoryService.findOne(id);
   }
 
   @Patch(':id')
   update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() updatePassCategoryDto: UpdatePassCategoryDto,
   ) {
     return this.passCategoryService.update(id, updatePassCategoryDto);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.passCategoryService.remove(id);
   }
 }

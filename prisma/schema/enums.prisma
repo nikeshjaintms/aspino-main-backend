@@ -1,0 +1,16 @@
+// ─────────────────────────────────────────────────────────────
+// enums.prisma — All Application Enum Types
+// ─────────────────────────────────────────────────────────────
+
+// ── Gate Pass ─────────────────────────────────────────────────
+
+enum GatePassType {
+  INWARD
+  OUTWARD
+}
+
+enum GatePassStatus {
+  GATE_IN
+  COMPLETED
+  CANCELLED
+}

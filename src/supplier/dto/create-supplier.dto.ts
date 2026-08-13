@@ -2,11 +2,12 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  IsNumber,
+  IsUUID,
   IsArray,
   IsEmail,
   Min,
   Max,
+  IsNumber,
 } from 'class-validator';
 
 export class CreateSupplierDto {
@@ -48,9 +49,9 @@ export class CreateSupplierDto {
   @IsOptional()
   approvalStatus?: string;
 
-  @IsNumber()
+  @IsUUID('4', { message: 'Bank ID must be a valid UUID' })
   @IsOptional()
-  bankId?: number;
+  bankId?: string;
 
   @IsString()
   @IsOptional()

@@ -1,10 +1,11 @@
-generator client {
-  provider = "prisma-client-js"
-}
+// ─────────────────────────────────────────────────────────────
+// models.prisma — All Database Models
+// ─────────────────────────────────────────────────────────────
 
-datasource db {
-  provider = "postgresql"
-}
+
+// ══════════════════════════════════════════════════════════════
+// ── USERS & AUTH
+// ══════════════════════════════════════════════════════════════
 
 model User {
   id        String    @id @default(uuid())
@@ -16,34 +17,39 @@ model User {
   employee  Employee?
 }
 
+
+// ══════════════════════════════════════════════════════════════
+// ── EMPLOYEE MANAGEMENT
+// ══════════════════════════════════════════════════════════════
+
 model Employee {
-  id               String               @id @default(uuid())
-  employeeId       String               @unique // e.g. ASP-2026-0001
-  userId           String?              @unique
-  user             User?                @relation(fields: [userId], references: [id])
-  firstName        String
-  lastName         String
-  email            String               @unique
-  department       String
-  designation      String
-  managerId        String?
-  dateOfJoining    DateTime
-  probationEnd     DateTime?
-  probationStatus  String               @default("UNDER_REVIEW") // UNDER_REVIEW, CONFIRMED, EXTENDED
-  status           String               @default("ACTIVE") // ONBOARDING, ACTIVE, EXITING, RELIEVED
-  createdAt        DateTime             @default(now())
-  documents        OnboardingDocument[]
-  induction        InductionSchedule?
-  systemAccess     SystemAccess?
-  roster           ShiftRoster[]
-  attendance       Attendance[]
-  leaveBalances    LeaveBalance[]
+  id                String               @id @default(uuid())
+  employeeId        String               @unique // e.g. ASP-2026-0001
+  userId            String?              @unique
+  user              User?                @relation(fields: [userId], references: [id])
+  firstName         String
+  lastName          String
+  email             String               @unique
+  department        String
+  designation       String
+  managerId         String?
+  dateOfJoining     DateTime
+  probationEnd      DateTime?
+  probationStatus   String               @default("UNDER_REVIEW") // UNDER_REVIEW, CONFIRMED, EXTENDED
+  status            String               @default("ACTIVE")       // ONBOARDING, ACTIVE, EXITING, RELIEVED
+  createdAt         DateTime             @default(now())
+  documents         OnboardingDocument[]
+  induction         InductionSchedule?
+  systemAccess      SystemAccess?
+  roster            ShiftRoster[]
+  attendance        Attendance[]
+  leaveBalances     LeaveBalance[]
   leaveApplications LeaveApplication[]
-  leaveLedger      LeaveLedger[]
-  goals            EmployeeGoal[]
-  appraisalReviews AppraisalReview[]
-  trainings        TrainingRecord[]
-  exitProcess      ExitProcess?
+  leaveLedger       LeaveLedger[]
+  goals             EmployeeGoal[]
+  appraisalReviews  AppraisalReview[]
+  trainings         TrainingRecord[]
+  exitProcess       ExitProcess?
 }
 
 model Department {
@@ -52,6 +58,11 @@ model Department {
   createdAt    DateTime         @default(now())
   requisitions JobRequisition[]
 }
+
+
+// ══════════════════════════════════════════════════════════════
+// ── RECRUITMENT
+// ══════════════════════════════════════════════════════════════
 
 model JobRequisition {
   id            String      @id @default(uuid())
@@ -114,6 +125,11 @@ model OfferLetter {
   createdAt   DateTime  @default(now())
 }
 
+
+// ══════════════════════════════════════════════════════════════
+// ── ONBOARDING
+// ══════════════════════════════════════════════════════════════
+
 model OnboardingDocument {
   id           String   @id @default(uuid())
   employeeId   String
@@ -134,14 +150,19 @@ model InductionSchedule {
 }
 
 model SystemAccess {
-  id             String   @id @default(uuid())
-  employeeId     String   @unique
-  employee       Employee @relation(fields: [employeeId], references: [id])
-  erpLogin       Boolean  @default(false)
-  email          Boolean  @default(false)
-  attendanceApp  Boolean  @default(false)
-  vpn            Boolean  @default(false)
+  id            String   @id @default(uuid())
+  employeeId    String   @unique
+  employee      Employee @relation(fields: [employeeId], references: [id])
+  erpLogin      Boolean  @default(false)
+  email         Boolean  @default(false)
+  attendanceApp Boolean  @default(false)
+  vpn           Boolean  @default(false)
 }
+
+
+// ══════════════════════════════════════════════════════════════
+// ── ATTENDANCE & SHIFTS
+// ══════════════════════════════════════════════════════════════
 
 model Shift {
   id        String        @id @default(uuid())
@@ -182,6 +203,11 @@ model Attendance {
   captureMethod      String?   @default("BIOMETRIC")
 }
 
+
+// ══════════════════════════════════════════════════════════════
+// ── LEAVE MANAGEMENT
+// ══════════════════════════════════════════════════════════════
+
 model LeaveBalance {
   id         String   @id @default(uuid())
   employeeId String
@@ -213,10 +239,31 @@ model LeaveLedger {
 }
 
 model Holiday {
-  id       String   @id @default(uuid())
-  name     String
-  date     DateTime
+  id   String   @id @default(uuid())
+  name String
+  date DateTime
 }
+
+model DepartmentLeaveMaster {
+  id            String   @id @default(uuid())
+  department    String
+  fiscalYear    String
+  casualLeave   Int
+  sickLeave     Int
+  earnedLeave   Int
+  otherLeave    Int      @default(0)
+  totalLeave    Int
+  effectiveFrom DateTime
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([department, fiscalYear])
+}
+
+
+// ══════════════════════════════════════════════════════════════
+// ── PERFORMANCE & APPRAISALS
+// ══════════════════════════════════════════════════════════════
 
 model AppraisalCycle {
   id               String            @id @default(uuid())
@@ -254,6 +301,11 @@ model AppraisalReview {
   status          String         @default("DRAFT") // DRAFT, SELF_REVIEW, MANAGER_REVIEW, COMPLETED
 }
 
+
+// ══════════════════════════════════════════════════════════════
+// ── TRAINING
+// ══════════════════════════════════════════════════════════════
+
 model TrainingRecord {
   id             String    @id @default(uuid())
   employeeId     String
@@ -265,18 +317,23 @@ model TrainingRecord {
   status         String    @default("COMPLETED") // COMPLETED, EXPIRED, PENDING
 }
 
+
+// ══════════════════════════════════════════════════════════════
+// ── EXIT MANAGEMENT
+// ══════════════════════════════════════════════════════════════
+
 model ExitProcess {
-  id                String                  @id @default(uuid())
-  employeeId        String                  @unique
-  employee          Employee                @relation(fields: [employeeId], references: [id])
-  type              String                  // RESIGNATION, TERMINATION
-  resignationDate   DateTime
-  noticePeriodDays  Int
-  lastWorkingDay    DateTime
-  reason            String
-  status            String                  @default("INITIATED") // INITIATED, CLEARANCE_IN_PROGRESS, SETTLED, COMPLETED
-  clearances        ClearanceTask[]
-  settlement        FullAndFinalSettlement?
+  id               String                  @id @default(uuid())
+  employeeId       String                  @unique
+  employee         Employee                @relation(fields: [employeeId], references: [id])
+  type             String                  // RESIGNATION, TERMINATION
+  resignationDate  DateTime
+  noticePeriodDays Int
+  lastWorkingDay   DateTime
+  reason           String
+  status           String                  @default("INITIATED") // INITIATED, CLEARANCE_IN_PROGRESS, SETTLED, COMPLETED
+  clearances       ClearanceTask[]
+  settlement       FullAndFinalSettlement?
 }
 
 model ClearanceTask {
@@ -291,34 +348,28 @@ model ClearanceTask {
 }
 
 model FullAndFinalSettlement {
-  id             String      @id @default(uuid())
-  exitProcessId  String      @unique
-  exitProcess    ExitProcess @relation(fields: [exitProcessId], references: [id])
-  pendingSalary  Float
+  id              String      @id @default(uuid())
+  exitProcessId   String      @unique
+  exitProcess     ExitProcess @relation(fields: [exitProcessId], references: [id])
+  pendingSalary   Float
   leaveEncashment Float
-  bonus          Float
-  recoveries     Float
-  netPayable     Float
-  paymentStatus  String      @default("UNPAID") // UNPAID, PAID
-  settlementDate DateTime?
+  bonus           Float
+  recoveries      Float
+  netPayable      Float
+  paymentStatus   String      @default("UNPAID") // UNPAID, PAID
+  settlementDate  DateTime?
 }
 
-enum GatePassType {
-  INWARD
-  OUTWARD
-}
 
-enum GatePassStatus {
-  GATE_IN
-  COMPLETED
-  CANCELLED
-}
+// ══════════════════════════════════════════════════════════════
+// ── GATE PASS  (uses enums: GatePassType, GatePassStatus)
+// ══════════════════════════════════════════════════════════════
 
 model PassCategory {
-  id          Int          @id @default(autoincrement())
+  id          String       @id @default(uuid())
   name        String
   code        String       @unique
-  type        GatePassType
+  type        GatePassType  // → enum in enums.prisma
   description String?
   isActive    Boolean      @default(true)
   createdAt   DateTime     @default(now())
@@ -327,12 +378,12 @@ model PassCategory {
 }
 
 model GatePass {
-  id                    Int            @id @default(autoincrement())
+  id                    String         @id @default(uuid())
   passNumber            String         @unique
-  type                  GatePassType
-  categoryId            Int
+  type                  GatePassType   // → enum in enums.prisma
+  categoryId            String
   category              PassCategory   @relation(fields: [categoryId], references: [id])
-  status                GatePassStatus @default(GATE_IN)
+  status                GatePassStatus @default(GATE_IN) // → enum in enums.prisma
 
   // Vehicle & Driver Details
   imageUrl              String?
@@ -353,17 +404,21 @@ model GatePass {
   coaGenerated          Boolean        @default(false)
   purpose               String?        // e.g. Equipment repair, Sample dispatch, Sales
 
-  // Automatic Timestamps
+  // Timestamps
   timeIn                DateTime       @default(now())
   timeOut               DateTime?
   notes                 String?
- 
   createdAt             DateTime       @default(now())
   updatedAt             DateTime       @updatedAt
 }
 
+
+// ══════════════════════════════════════════════════════════════
+// ── BANK & SUPPLIER
+// ══════════════════════════════════════════════════════════════
+
 model Bank {
-  id        Int        @id @default(autoincrement())
+  id        String     @id @default(uuid())
   name      String     @unique
   isActive  Boolean    @default(true)
   suppliers Supplier[]
@@ -372,7 +427,7 @@ model Bank {
 }
 
 model Supplier {
-  id                 Int      @id @default(autoincrement())
+  id                 String   @id @default(uuid())
   code               String   @unique
   name               String
   address            String?
@@ -382,35 +437,23 @@ model Supplier {
   email              String?
   approvedCategories String[]
   approvalStatus     String   @default("Approved")
-  
-  bankId             Int?
-  bank               Bank?    @relation(fields: [bankId], references: [id])
-  accountNumber      String?
-  ifscCode           String?
-  accountName        String?
-  
-  rating             Float    @default(5.0)
-  history            String?
-  
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+
+  bankId        String?
+  bank          Bank?    @relation(fields: [bankId], references: [id]) // → Bank.id (UUID)
+  accountNumber String?
+  ifscCode      String?
+  accountName   String?
+
+  rating    Float    @default(5.0)
+  history   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-model DepartmentLeaveMaster {
-  id            String   @id @default(uuid())
-  department    String
-  fiscalYear    String
-  casualLeave   Int
-  sickLeave     Int
-  earnedLeave   Int
-  otherLeave    Int      @default(0)
-  totalLeave    Int
-  effectiveFrom DateTime
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
 
-  @@unique([department, fiscalYear])
-}
+// ══════════════════════════════════════════════════════════════
+// ── AUDIT / ACTIVITY LOG
+// ══════════════════════════════════════════════════════════════
 
 model ActivityLog {
   id           String   @id @default(uuid())

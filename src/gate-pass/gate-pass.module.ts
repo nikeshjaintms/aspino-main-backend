@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { GatePassController } from './gate-pass.controller';
 import { GatePassService } from './gate-pass.service';
 import { GatePassPdfService } from './gate-pass-pdf.service';
-import { GatePassRepository } from './gate-pass.repository';
+import { GatePassRepository } from './repositories/gate-pass.repository';
 
 @Module({
   controllers: [GatePassController],

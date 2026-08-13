@@ -141,7 +141,7 @@ export class PassCategoryService {
     }
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     const category = await this.prisma.passCategory.findUnique({
       where: { id },
     });
@@ -151,7 +151,7 @@ export class PassCategoryService {
     return category;
   }
 
-  async update(id: number, dto: UpdatePassCategoryDto) {
+  async update(id: string, dto: UpdatePassCategoryDto) {
     const category = await this.findOne(id);
 
     if (dto.code) {
@@ -201,7 +201,7 @@ export class PassCategoryService {
     };
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     await this.findOne(id);
     await this.prisma.passCategory.delete({
       where: { id },

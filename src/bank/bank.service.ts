@@ -112,7 +112,7 @@ export class BankService {
     }
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     const bank = await this.prisma.bank.findUnique({
       where: { id },
     });
@@ -122,7 +122,7 @@ export class BankService {
     return bank;
   }
 
-  async update(id: number, dto: UpdateBankDto) {
+  async update(id: string, dto: UpdateBankDto) {
     await this.findOne(id);
 
     if (dto.name) {
@@ -151,7 +151,7 @@ export class BankService {
     };
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     await this.findOne(id);
 
     // Check if suppliers are linked to this bank
