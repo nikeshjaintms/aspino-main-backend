@@ -450,6 +450,45 @@ model Supplier {
   updatedAt DateTime @updatedAt
 }
 
+model Vendor {
+  id                String   @id @default(uuid())
+  code              String   @unique
+  name              String
+  serviceType       String
+  address           String?
+  contactName       String?
+  mobile            String?
+  email             String?
+  contractReference String?
+  approvalStatus    String   @default("Approved")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+// ══════════════════════════════════════════════════════════════
+// ── CUSTOMER MASTER
+// ══════════════════════════════════════════════════════════════
+
+model Customer {
+  id              String   @id @default(uuid())
+  customerCode    String   @unique
+  name            String
+  billingAddress  String?
+  shippingAddress String?
+  gstNo           String?
+  creditTerms     String?  // e.g. "Net 30 Days", "Net 15 Days", "Immediate", "Advance", etc.
+  contactPerson   String?
+  email           String?
+  phone           String?
+  customerType    String   @default("DOMESTIC") // "DOMESTIC" | "EXPORT"
+  isDomestic      Boolean  @default(true)
+  country         String?  @default("India")
+  isActive        Boolean  @default(true)
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
 
 // ══════════════════════════════════════════════════════════════
 // ── AUDIT / ACTIVITY LOG
@@ -475,3 +514,135 @@ model ActivityLog {
   responseBody Json?    // Serialized response body (sanitized, omitted if too large)
   createdAt    DateTime @default(now())
 }
+
+
+// ══════════════════════════════════════════════════════════════
+// ── PRODUCT CATEGORY, SUB-CATEGORY & PRODUCT MASTERS
+// ══════════════════════════════════════════════════════════════
+
+model ProductCategory {
+  id            String               @id @default(uuid())
+  categoryCode  String               @unique
+  categoryName  String
+  description   String?
+  isActive      Boolean              @default(true)
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+
+  subCategories ProductSubCategory[]
+  products      Product[]
+}
+
+model ProductSubCategory {
+  id              String          @id @default(uuid())
+  subCategoryCode String          @unique
+  subCategoryName String
+  categoryId      String
+  category        ProductCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  description     String?
+  isActive        Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  products        Product[]
+}
+
+model Product {
+  id                 String              @id @default(uuid())
+  productCode        String              @unique
+  name               String
+  categoryId         String
+  category           ProductCategory     @relation(fields: [categoryId], references: [id])
+  subCategoryId      String?
+  subCategory        ProductSubCategory? @relation(fields: [subCategoryId], references: [id])
+  uom                String              // e.g. TABLET, CAPSULE, VIAL, STRIP, BOTTLE, KG, LTR
+  shelfLife          String              // e.g. "24 Months", "36 Months"
+  storageCondition   String              // e.g. "Store below 25°C", "2-8°C (Cold Storage)"
+  standardCost       Float               @default(0.0)
+  hsnCode            String              // e.g. "30049099"
+  qcSpecification    String?             // Linked QC Specification / Standard description
+  isActive           Boolean             @default(true)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+}
+
+// ══════════════════════════════════════════════════════════════
+// ── UOM MASTER (Unit of Measurement)
+// ══════════════════════════════════════════════════════════════
+
+model Uom {
+  id               String   @id @default(uuid())
+  uomCode          String   @unique
+  uomName          String
+  conversionFactor Float?   @default(1.0)
+  description      String?
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+// ══════════════════════════════════════════════════════════════
+// ── PACKING MATERIAL MASTER
+// ══════════════════════════════════════════════════════════════
+
+model PackingMaterial {
+  id                  String   @id @default(uuid())
+  materialCode        String   @unique // e.g. "PKG-ALU-01", "PKG-BTL-100ML"
+  type                String   @default("PRIMARY") // "PRIMARY", "SECONDARY", "TERTIARY"
+  description         String
+  approvedSuppliers   Json?    // Array of approved supplier names / IDs or objects
+  linkedSpecification String?  // Linked QC Specification Code or ID
+  uom                 String   // e.g. "ROLL", "NOS", "KG", "BOX", "MTR"
+  standardCost        Float    @default(0.0)
+  minimumStock        Float?   @default(0.0)
+  storageCondition    String?  @default("Ambient")
+  isActive            Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+// ══════════════════════════════════════════════════════════════
+// ── QC SPECIFICATION MASTER
+// ══════════════════════════════════════════════════════════════
+
+model QcSpecification {
+  id                  String    @id @default(uuid())
+  specCode            String    @unique // e.g. "QC-SPEC-001", "SPEC-PCM-500"
+  productMaterialCode String    // Product or Material Code (e.g. "PRD-PCM-500", "PKG-ALU-01")
+  itemName            String    // Product or Material Name
+  itemType            String    @default("PRODUCT") // "PRODUCT", "PACKING_MATERIAL", "RAW_MATERIAL"
+  testParameters      Json      // Array of test parameter objects: [{ parameterName, testMethod, acceptableLimits, uom }]
+  testMethod          String?   // Overall standard or testing reference (e.g. "IP / BP / USP")
+  acceptableLimits    String?   // General acceptance criteria / summary
+  versionNo           String    @default("v1.0") // e.g. "v1.0", "Rev 02"
+  effectiveDate       DateTime  @default(now())
+  reviewDate          DateTime?
+  status              String    @default("ACTIVE") // "ACTIVE", "DRAFT", "SUPERSEDED", "OBSOLETE"
+  preparedBy          String?
+  approvedBy          String?
+  isActive            Boolean   @default(true)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+// ══════════════════════════════════════════════════════════════
+// ── WAREHOUSE / STORAGE LOCATION MASTER
+// ══════════════════════════════════════════════════════════════
+
+model StorageLocation {
+  id               String   @id @default(uuid())
+  locationCode     String   @unique // e.g. "LOC-RM-A101", "LOC-COLD-01", "LOC-FG-R02"
+  locationName     String   // e.g. "Raw Material Bay A-01", "Cold Room 1 (2-8°C)"
+  warehouse        String?  @default("Main Warehouse") // e.g. "Central Warehouse", "Warehouse A"
+  storageCondition String   @default("AMBIENT") // "AMBIENT", "COOL", "COLD_CHAIN", "FROZEN", "CONTROLLED_ROOM_TEMPERATURE"
+  capacity         String   // e.g. "500 Pallets", "1000 Boxes", "50 Drums"
+  linkedStoreType  String   @default("RAW_MATERIAL_STORE") // "RAW_MATERIAL_STORE", "PACKAGING_STORE", "FINISHED_GOODS_STORE", "QUARANTINE_STORE", "REJECTION_STORE", "IN_TRANSIT_STORE"
+  temperatureRange String?  // e.g. "2°C - 8°C", "15°C - 25°C", "Below -20°C"
+  humidityRange    String?  // e.g. "NMT 60% RH"
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+
+
