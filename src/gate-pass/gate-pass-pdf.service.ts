@@ -116,23 +116,46 @@ export class GatePassPdfService {
       const cardH = 125;
       const cardW = 248;
 
-      // Left Box: VEHICLE & DRIVER INFORMATION
-      drawCardBox(40, cardY, cardW, cardH, 'VEHICLE & DRIVER INFORMATION');
-      drawCardRow(40, cardY + 32, cardW, 'Vehicle Number:', pass.vehicleNumber);
-      drawCardRow(40, cardY + 52, cardW, 'Driver Name:', pass.driverName);
+      const isVisitor =
+        pass.category?.name?.toLowerCase().includes('visitor') ||
+        pass.category?.code?.toLowerCase().includes('vis');
+
+      // Left Box: VEHICLE & DRIVER / VISITOR INFORMATION
+      const leftBoxTitle = isVisitor
+        ? 'VISITOR & CONTACT INFORMATION'
+        : 'VEHICLE & DRIVER INFORMATION';
+      drawCardBox(40, cardY, cardW, cardH, leftBoxTitle);
+      drawCardRow(
+        40,
+        cardY + 32,
+        cardW,
+        isVisitor ? 'Visitor Name:' : 'Vehicle Number:',
+        isVisitor ? pass.driverName : pass.vehicleNumber,
+      );
+      drawCardRow(
+        40,
+        cardY + 52,
+        cardW,
+        isVisitor ? 'Contact Number:' : 'Driver Name:',
+        isVisitor ? (pass.driverContact || 'N/A') : pass.driverName,
+      );
       drawCardRow(
         40,
         cardY + 72,
         cardW,
-        'Driver Contact:',
-        pass.driverContact || 'N/A',
+        isVisitor ? 'Visiting From / Org:' : 'Driver Contact:',
+        isVisitor
+          ? (pass.transporterName || 'Self / Personal')
+          : (pass.driverContact || 'N/A'),
       );
       drawCardRow(
         40,
         cardY + 92,
         cardW,
-        'Transporter Name:',
-        pass.transporterName || 'N/A',
+        isVisitor ? 'Entry Mode / Vehicle:' : 'Transporter Name:',
+        isVisitor
+          ? (pass.vehicleNumber || 'WALKING')
+          : (pass.transporterName || 'N/A'),
       );
 
       // Right Box: MOVEMENT & CATEGORY STATUS
@@ -167,12 +190,36 @@ export class GatePassPdfService {
       const btmH = 105;
       const btmW = 515;
 
-      const titleLogistics = isInward
+      const titleLogistics = isVisitor
+        ? 'VISIT PURPOSE & HOST DETAILS'
+        : isInward
         ? 'INWARD MATERIAL & LOGISTICS REFERENCES'
         : 'OUTWARD DISPATCH & LOGISTICS REFERENCES';
       drawCardBox(40, btmY, btmW, btmH, titleLogistics);
 
-      if (isInward) {
+      if (isVisitor) {
+        drawCardRow(
+          40,
+          btmY + 32,
+          btmW,
+          'Person To Meet / Dept:',
+          pass.supplierSource || 'N/A',
+        );
+        drawCardRow(
+          40,
+          btmY + 52,
+          btmW,
+          'Purpose of Visit:',
+          pass.purpose || 'Official Visit',
+        );
+        drawCardRow(
+          40,
+          btmY + 72,
+          btmW,
+          'Visitor Count / Badge Ref:',
+          pass.declaredQuantity || pass.deliveryChallanNumber || '1 Person',
+        );
+      } else if (isInward) {
         drawCardRow(
           40,
           btmY + 32,

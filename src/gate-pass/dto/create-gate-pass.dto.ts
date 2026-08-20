@@ -27,10 +27,10 @@ export class CreateGatePassDto {
   categoryId: string;
 
   @IsString()
-  @IsNotEmpty({ message: 'Vehicle number is required' })
-  @Matches(/^[A-Z0-9\-\s]{4,20}$/i, {
+  @IsNotEmpty({ message: 'Vehicle number or Entry mode is required' })
+  @Matches(/^[A-Z0-9\-\s]{2,20}$/i, {
     message:
-      'Vehicle number must be a valid registration number (e.g. MH-04-JK-8842)',
+      'Vehicle number or entry mode must be valid (e.g. MH-04-JK-8842 or WALKING)',
   })
   vehicleNumber: string;
 
