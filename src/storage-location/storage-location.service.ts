@@ -87,11 +87,24 @@ export class StorageLocationService {
       finishedGoodsCount,
     ] = await Promise.all([
       this.prisma.storageLocation.count({ where }),
-      this.prisma.storageLocation.count({ where: { ...where, isActive: true } }),
-      this.prisma.storageLocation.count({ where: { ...where, storageCondition: 'AMBIENT' } }),
-      this.prisma.storageLocation.count({ where: { ...where, storageCondition: { in: ['COLD_CHAIN', 'COOL', 'FROZEN'] } } }),
-      this.prisma.storageLocation.count({ where: { ...where, linkedStoreType: 'RAW_MATERIAL_STORE' } }),
-      this.prisma.storageLocation.count({ where: { ...where, linkedStoreType: 'FINISHED_GOODS_STORE' } }),
+      this.prisma.storageLocation.count({
+        where: { ...where, isActive: true },
+      }),
+      this.prisma.storageLocation.count({
+        where: { ...where, storageCondition: 'AMBIENT' },
+      }),
+      this.prisma.storageLocation.count({
+        where: {
+          ...where,
+          storageCondition: { in: ['COLD_CHAIN', 'COOL', 'FROZEN'] },
+        },
+      }),
+      this.prisma.storageLocation.count({
+        where: { ...where, linkedStoreType: 'RAW_MATERIAL_STORE' },
+      }),
+      this.prisma.storageLocation.count({
+        where: { ...where, linkedStoreType: 'FINISHED_GOODS_STORE' },
+      }),
     ]);
 
     const take = limit && limit > 0 ? limit : undefined;
@@ -136,7 +149,10 @@ export class StorageLocationService {
     const existing = await this.findOne(id);
 
     let formattedCode = existing.locationCode;
-    if (dto.locationCode && dto.locationCode.trim().toUpperCase() !== existing.locationCode) {
+    if (
+      dto.locationCode &&
+      dto.locationCode.trim().toUpperCase() !== existing.locationCode
+    ) {
       formattedCode = dto.locationCode.trim().toUpperCase();
       const duplicate = await this.prisma.storageLocation.findUnique({
         where: { locationCode: formattedCode },
@@ -152,13 +168,25 @@ export class StorageLocationService {
       where: { id },
       data: {
         locationCode: formattedCode,
-        ...(dto.locationName !== undefined && { locationName: dto.locationName.trim() }),
-        ...(dto.warehouse !== undefined && { warehouse: dto.warehouse?.trim() || 'Main Warehouse' }),
-        ...(dto.storageCondition !== undefined && { storageCondition: dto.storageCondition.toUpperCase() }),
+        ...(dto.locationName !== undefined && {
+          locationName: dto.locationName.trim(),
+        }),
+        ...(dto.warehouse !== undefined && {
+          warehouse: dto.warehouse?.trim() || 'Main Warehouse',
+        }),
+        ...(dto.storageCondition !== undefined && {
+          storageCondition: dto.storageCondition.toUpperCase(),
+        }),
         ...(dto.capacity !== undefined && { capacity: dto.capacity.trim() }),
-        ...(dto.linkedStoreType !== undefined && { linkedStoreType: dto.linkedStoreType.toUpperCase() }),
-        ...(dto.temperatureRange !== undefined && { temperatureRange: dto.temperatureRange?.trim() || null }),
-        ...(dto.humidityRange !== undefined && { humidityRange: dto.humidityRange?.trim() || null }),
+        ...(dto.linkedStoreType !== undefined && {
+          linkedStoreType: dto.linkedStoreType.toUpperCase(),
+        }),
+        ...(dto.temperatureRange !== undefined && {
+          temperatureRange: dto.temperatureRange?.trim() || null,
+        }),
+        ...(dto.humidityRange !== undefined && {
+          humidityRange: dto.humidityRange?.trim() || null,
+        }),
         ...(dto.isActive !== undefined && { isActive: dto.isActive }),
       },
     });

@@ -212,7 +212,40 @@ export class PrismaService
         CREATE UNIQUE INDEX IF NOT EXISTS "StorageLocation_locationCode_key" ON "public"."StorageLocation"("locationCode");
       `);
 
-      this.logger.log('Ensured all Master table schemas (Vendor, Customer, ProductCategory, ProductSubCategory, Product, Uom, PackingMaterial, QcSpecification, StorageLocation) in PostgreSQL database.');
+      // Ensure Bank table and index exist in PostgreSQL (and id is TEXT)
+      await this.$executeRawUnsafe(`
+        CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+        CREATE TABLE IF NOT EXISTS "public"."Bank" (
+          "id" TEXT NOT NULL,
+          "name" TEXT NOT NULL,
+          "isActive" BOOLEAN NOT NULL DEFAULT true,
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          CONSTRAINT "Bank_pkey" PRIMARY KEY ("id")
+        );
+        CREATE UNIQUE INDEX IF NOT EXISTS "Bank_name_key" ON "public"."Bank"("name");
+
+        DO $$
+        BEGIN
+          IF EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_schema = 'public' AND table_name = 'Bank' AND column_name = 'id' AND data_type = 'integer'
+          ) THEN
+            ALTER TABLE "public"."Bank" ALTER COLUMN "id" DROP DEFAULT;
+            ALTER TABLE "public"."Bank" ADD COLUMN IF NOT EXISTS "new_id" TEXT DEFAULT gen_random_uuid()::text;
+            UPDATE "public"."Bank" SET "new_id" = gen_random_uuid()::text WHERE "new_id" IS NULL;
+            ALTER TABLE "public"."Bank" DROP CONSTRAINT IF EXISTS "Bank_pkey";
+            ALTER TABLE "public"."Bank" DROP COLUMN "id";
+            ALTER TABLE "public"."Bank" RENAME COLUMN "new_id" TO "id";
+            ALTER TABLE "public"."Bank" ALTER COLUMN "id" SET NOT NULL;
+            ALTER TABLE "public"."Bank" ADD CONSTRAINT "Bank_pkey" PRIMARY KEY ("id");
+          END IF;
+        END $$;
+      `);
+
+      this.logger.log(
+        'Ensured all Master table schemas (Vendor, Customer, ProductCategory, ProductSubCategory, Product, Uom, PackingMaterial, QcSpecification, StorageLocation, Bank) in PostgreSQL database.',
+      );
     } catch (error) {
       this.logger.error(
         `Failed to connect to PostgreSQL database: ${(error as Error).message}`,

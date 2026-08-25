@@ -78,7 +78,8 @@ export class PassCategoryService {
 
       const total = await this.prisma.passCategory.count({ where });
       const take = limit ? Number(limit) : undefined;
-      const skip = page && limit ? (Number(page) - 1) * Number(limit) : undefined;
+      const skip =
+        page && limit ? (Number(page) - 1) * Number(limit) : undefined;
 
       const data = await this.prisma.passCategory.findMany({
         where,

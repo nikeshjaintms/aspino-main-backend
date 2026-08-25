@@ -173,7 +173,10 @@ export class CustomerService {
     }
 
     let formattedCode = existing.customerCode;
-    if (dto.customerCode && dto.customerCode.trim().toUpperCase() !== existing.customerCode) {
+    if (
+      dto.customerCode &&
+      dto.customerCode.trim().toUpperCase() !== existing.customerCode
+    ) {
       formattedCode = dto.customerCode.trim().toUpperCase();
       const codeCheck = await this.prisma.customer.findUnique({
         where: { customerCode: formattedCode },
@@ -198,7 +201,8 @@ export class CustomerService {
         ? 'DOMESTIC'
         : 'EXPORT';
 
-    let country = dto.country !== undefined ? dto.country?.trim() : existing.country;
+    let country =
+      dto.country !== undefined ? dto.country?.trim() : existing.country;
     if (isDomestic && (!country || country === 'International')) {
       country = 'India';
     }
@@ -235,8 +239,7 @@ export class CustomerService {
         customerType,
         isDomestic,
         country: country || null,
-        isActive:
-          dto.isActive !== undefined ? dto.isActive : existing.isActive,
+        isActive: dto.isActive !== undefined ? dto.isActive : existing.isActive,
         notes:
           dto.notes !== undefined ? dto.notes?.trim() || null : existing.notes,
       },

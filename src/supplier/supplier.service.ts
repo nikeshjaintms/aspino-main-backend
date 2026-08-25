@@ -94,7 +94,8 @@ export class SupplierService {
 
       const total = await this.prisma.supplier.count({ where });
       const take = limit ? Number(limit) : undefined;
-      const skip = page && limit ? (Number(page) - 1) * Number(limit) : undefined;
+      const skip =
+        page && limit ? (Number(page) - 1) * Number(limit) : undefined;
 
       const data = await this.prisma.supplier.findMany({
         where,

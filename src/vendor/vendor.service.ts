@@ -77,7 +77,8 @@ export class VendorService {
 
       const total = await this.prisma.vendor.count({ where });
       const take = limit ? Number(limit) : undefined;
-      const skip = page && limit ? (Number(page) - 1) * Number(limit) : undefined;
+      const skip =
+        page && limit ? (Number(page) - 1) * Number(limit) : undefined;
 
       const data = await this.prisma.vendor.findMany({
         where,
@@ -98,15 +99,16 @@ export class VendorService {
       });
 
       const allMatchedVendors = await this.prisma.vendor.findMany({
-        where,
+        where: {
+          ...where,
+          serviceType: { not: '' },
+        },
+        distinct: ['serviceType'],
         select: {
           serviceType: true,
         },
       });
-      const uniqueCategories = new Set(
-        allMatchedVendors.map((v) => v.serviceType).filter(Boolean),
-      );
-      const totalCategories = uniqueCategories.size;
+      const totalCategories = allMatchedVendors.filter((v) => v.serviceType).length;
 
       return {
         data,

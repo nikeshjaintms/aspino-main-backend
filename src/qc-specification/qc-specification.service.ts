@@ -24,7 +24,9 @@ export class QcSpecificationService {
       );
     }
 
-    const effectiveDate = dto.effectiveDate ? new Date(dto.effectiveDate) : new Date();
+    const effectiveDate = dto.effectiveDate
+      ? new Date(dto.effectiveDate)
+      : new Date();
     const reviewDate = dto.reviewDate ? new Date(dto.reviewDate) : null;
 
     const spec = await this.prisma.qcSpecification.create({
@@ -66,7 +68,11 @@ export class QcSpecificationService {
     }
 
     if (status && status.toUpperCase() !== 'ALL') {
-      if (['ACTIVE', 'DRAFT', 'SUPERSEDED', 'OBSOLETE'].includes(status.toUpperCase())) {
+      if (
+        ['ACTIVE', 'DRAFT', 'SUPERSEDED', 'OBSOLETE'].includes(
+          status.toUpperCase(),
+        )
+      ) {
         where.status = status.toUpperCase();
       } else if (status.toUpperCase() === 'ACTIVE_STATUS') {
         where.isActive = true;
@@ -89,10 +95,21 @@ export class QcSpecificationService {
     const [totalCount, activeCount, draftCount, productCount, materialCount] =
       await Promise.all([
         this.prisma.qcSpecification.count({ where }),
-        this.prisma.qcSpecification.count({ where: { ...where, status: 'ACTIVE' } }),
-        this.prisma.qcSpecification.count({ where: { ...where, status: 'DRAFT' } }),
-        this.prisma.qcSpecification.count({ where: { ...where, itemType: 'PRODUCT' } }),
-        this.prisma.qcSpecification.count({ where: { ...where, itemType: { in: ['PACKING_MATERIAL', 'RAW_MATERIAL'] } } }),
+        this.prisma.qcSpecification.count({
+          where: { ...where, status: 'ACTIVE' },
+        }),
+        this.prisma.qcSpecification.count({
+          where: { ...where, status: 'DRAFT' },
+        }),
+        this.prisma.qcSpecification.count({
+          where: { ...where, itemType: 'PRODUCT' },
+        }),
+        this.prisma.qcSpecification.count({
+          where: {
+            ...where,
+            itemType: { in: ['PACKING_MATERIAL', 'RAW_MATERIAL'] },
+          },
+        }),
       ]);
 
     const take = limit && limit > 0 ? limit : undefined;
@@ -136,7 +153,10 @@ export class QcSpecificationService {
     const existing = await this.findOne(id);
 
     let formattedCode = existing.specCode;
-    if (dto.specCode && dto.specCode.trim().toUpperCase() !== existing.specCode) {
+    if (
+      dto.specCode &&
+      dto.specCode.trim().toUpperCase() !== existing.specCode
+    ) {
       formattedCode = dto.specCode.trim().toUpperCase();
       const duplicate = await this.prisma.qcSpecification.findUnique({
         where: { specCode: formattedCode },
@@ -148,25 +168,41 @@ export class QcSpecificationService {
       }
     }
 
-    const effectiveDate = dto.effectiveDate ? new Date(dto.effectiveDate) : undefined;
+    const effectiveDate = dto.effectiveDate
+      ? new Date(dto.effectiveDate)
+      : undefined;
     const reviewDate = dto.reviewDate ? new Date(dto.reviewDate) : undefined;
 
     const updated = await this.prisma.qcSpecification.update({
       where: { id },
       data: {
         specCode: formattedCode,
-        ...(dto.productMaterialCode !== undefined && { productMaterialCode: dto.productMaterialCode.trim().toUpperCase() }),
+        ...(dto.productMaterialCode !== undefined && {
+          productMaterialCode: dto.productMaterialCode.trim().toUpperCase(),
+        }),
         ...(dto.itemName !== undefined && { itemName: dto.itemName.trim() }),
-        ...(dto.itemType !== undefined && { itemType: dto.itemType.toUpperCase() }),
-        ...(dto.testParameters !== undefined && { testParameters: dto.testParameters }),
-        ...(dto.testMethod !== undefined && { testMethod: dto.testMethod?.trim() || null }),
-        ...(dto.acceptableLimits !== undefined && { acceptableLimits: dto.acceptableLimits?.trim() || null }),
+        ...(dto.itemType !== undefined && {
+          itemType: dto.itemType.toUpperCase(),
+        }),
+        ...(dto.testParameters !== undefined && {
+          testParameters: dto.testParameters,
+        }),
+        ...(dto.testMethod !== undefined && {
+          testMethod: dto.testMethod?.trim() || null,
+        }),
+        ...(dto.acceptableLimits !== undefined && {
+          acceptableLimits: dto.acceptableLimits?.trim() || null,
+        }),
         ...(dto.versionNo !== undefined && { versionNo: dto.versionNo.trim() }),
         ...(effectiveDate !== undefined && { effectiveDate }),
         ...(reviewDate !== undefined && { reviewDate }),
         ...(dto.status !== undefined && { status: dto.status.toUpperCase() }),
-        ...(dto.preparedBy !== undefined && { preparedBy: dto.preparedBy?.trim() || null }),
-        ...(dto.approvedBy !== undefined && { approvedBy: dto.approvedBy?.trim() || null }),
+        ...(dto.preparedBy !== undefined && {
+          preparedBy: dto.preparedBy?.trim() || null,
+        }),
+        ...(dto.approvedBy !== undefined && {
+          approvedBy: dto.approvedBy?.trim() || null,
+        }),
         ...(dto.isActive !== undefined && { isActive: dto.isActive }),
       },
     });

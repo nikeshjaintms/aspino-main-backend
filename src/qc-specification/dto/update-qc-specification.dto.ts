@@ -1,9 +1,4 @@
-import {
-  IsString,
-  IsOptional,
-  IsBoolean,
-  IsIn,
-} from 'class-validator';
+import { IsString, IsOptional, IsBoolean, IsIn } from 'class-validator';
 
 export class UpdateQcSpecificationDto {
   @IsString()

@@ -165,9 +165,7 @@ export class UomService {
         ...(dto.uomName && { uomName: dto.uomName.trim() }),
         ...(dto.conversionFactor !== undefined && {
           conversionFactor:
-            dto.conversionFactor !== null
-              ? Number(dto.conversionFactor)
-              : 1.0,
+            dto.conversionFactor !== null ? Number(dto.conversionFactor) : 1.0,
         }),
         ...(dto.description !== undefined && {
           description: dto.description?.trim() || null,

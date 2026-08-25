@@ -9,7 +9,10 @@ import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { AuditService } from '../services/audit.service';
-import { LOG_ACTIVITY_KEY, LogActivityOptions } from '../decorators/log-activity.decorator';
+import {
+  LOG_ACTIVITY_KEY,
+  LogActivityOptions,
+} from '../decorators/log-activity.decorator';
 
 @Injectable()
 export class AuditInterceptor implements NestInterceptor {
@@ -31,7 +34,8 @@ export class AuditInterceptor implements NestInterceptor {
     );
 
     const isMutating = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method);
-    const isLogin = url.includes('/auth') && url.includes('login') || url.includes('login');
+    const isLogin =
+      (url.includes('/auth') && url.includes('login')) || url.includes('login');
 
     // Only log if it's mutating, or if it is a login request, or if it has the decorator explicitly
     if (!isMutating && !isLogin && !decoratorOptions) {
@@ -232,8 +236,10 @@ export class AuditInterceptor implements NestInterceptor {
     if (parts.length > 0) {
       const last = parts[parts.length - 1];
       // Check if last element is a parameter/id
-      const isId = last.includes('-') || !isNaN(Number(last)) || last.length > 20;
-      const entityPart = isId && parts.length > 1 ? parts[parts.length - 2] : last;
+      const isId =
+        last.includes('-') || !isNaN(Number(last)) || last.length > 20;
+      const entityPart =
+        isId && parts.length > 1 ? parts[parts.length - 2] : last;
 
       rawEntity = entityPart
         .replace(/-./g, (match) => match[1].toUpperCase())
@@ -266,7 +272,9 @@ export class AuditInterceptor implements NestInterceptor {
     const forwardedFor = request.headers['x-forwarded-for'];
     if (forwardedFor) {
       const ips =
-        typeof forwardedFor === 'string' ? forwardedFor.split(',') : forwardedFor;
+        typeof forwardedFor === 'string'
+          ? forwardedFor.split(',')
+          : forwardedFor;
       if (ips.length > 0) {
         const rawIp = ips[0].trim();
         return rawIp === '::1' ? '127.0.0.1' : rawIp;

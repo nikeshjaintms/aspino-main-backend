@@ -54,7 +54,8 @@ export class BankService {
 
       const total = await this.prisma.bank.count({ where });
       const take = limit ? Number(limit) : undefined;
-      const skip = page && limit ? (Number(page) - 1) * Number(limit) : undefined;
+      const skip =
+        page && limit ? (Number(page) - 1) * Number(limit) : undefined;
 
       const data = await this.prisma.bank.findMany({
         where,

@@ -21,13 +21,7 @@ export class CreateStorageLocationDto {
 
   @IsString()
   @IsIn(
-    [
-      'AMBIENT',
-      'COOL',
-      'COLD_CHAIN',
-      'FROZEN',
-      'CONTROLLED_ROOM_TEMPERATURE',
-    ],
+    ['AMBIENT', 'COOL', 'COLD_CHAIN', 'FROZEN', 'CONTROLLED_ROOM_TEMPERATURE'],
     {
       message:
         'Storage condition must be AMBIENT, COOL, COLD_CHAIN, FROZEN, or CONTROLLED_ROOM_TEMPERATURE',

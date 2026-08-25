@@ -112,7 +112,11 @@ export class ProductService {
         { hsnCode: { contains: q, mode: 'insensitive' } },
         { qcSpecification: { contains: q, mode: 'insensitive' } },
         { category: { categoryName: { contains: q, mode: 'insensitive' } } },
-        { subCategory: { subCategoryName: { contains: q, mode: 'insensitive' } } },
+        {
+          subCategory: {
+            subCategoryName: { contains: q, mode: 'insensitive' },
+          },
+        },
       ];
     }
 
@@ -163,7 +167,11 @@ export class ProductService {
           { hsnCode: { contains: q, mode: 'insensitive' } },
           { qcSpecification: { contains: q, mode: 'insensitive' } },
           { category: { categoryName: { contains: q, mode: 'insensitive' } } },
-          { subCategory: { subCategoryName: { contains: q, mode: 'insensitive' } } },
+          {
+            subCategory: {
+              subCategoryName: { contains: q, mode: 'insensitive' },
+            },
+          },
         ];
       }
 

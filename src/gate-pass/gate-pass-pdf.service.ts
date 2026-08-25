@@ -137,7 +137,7 @@ export class GatePassPdfService {
         cardY + 52,
         cardW,
         isVisitor ? 'Contact Number:' : 'Driver Name:',
-        isVisitor ? (pass.driverContact || 'N/A') : pass.driverName,
+        isVisitor ? pass.driverContact || 'N/A' : pass.driverName,
       );
       drawCardRow(
         40,
@@ -145,8 +145,8 @@ export class GatePassPdfService {
         cardW,
         isVisitor ? 'Visiting From / Org:' : 'Driver Contact:',
         isVisitor
-          ? (pass.transporterName || 'Self / Personal')
-          : (pass.driverContact || 'N/A'),
+          ? pass.transporterName || 'Self / Personal'
+          : pass.driverContact || 'N/A',
       );
       drawCardRow(
         40,
@@ -154,8 +154,8 @@ export class GatePassPdfService {
         cardW,
         isVisitor ? 'Entry Mode / Vehicle:' : 'Transporter Name:',
         isVisitor
-          ? (pass.vehicleNumber || 'WALKING')
-          : (pass.transporterName || 'N/A'),
+          ? pass.vehicleNumber || 'WALKING'
+          : pass.transporterName || 'N/A',
       );
 
       // Right Box: MOVEMENT & CATEGORY STATUS
@@ -193,8 +193,8 @@ export class GatePassPdfService {
       const titleLogistics = isVisitor
         ? 'VISIT PURPOSE & HOST DETAILS'
         : isInward
-        ? 'INWARD MATERIAL & LOGISTICS REFERENCES'
-        : 'OUTWARD DISPATCH & LOGISTICS REFERENCES';
+          ? 'INWARD MATERIAL & LOGISTICS REFERENCES'
+          : 'OUTWARD DISPATCH & LOGISTICS REFERENCES';
       drawCardBox(40, btmY, btmW, btmH, titleLogistics);
 
       if (isVisitor) {

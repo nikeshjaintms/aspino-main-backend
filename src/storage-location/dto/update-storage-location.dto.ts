@@ -1,9 +1,4 @@
-import {
-  IsString,
-  IsOptional,
-  IsBoolean,
-  IsIn,
-} from 'class-validator';
+import { IsString, IsOptional, IsBoolean, IsIn } from 'class-validator';
 
 export class UpdateStorageLocationDto {
   @IsString()
@@ -20,13 +15,7 @@ export class UpdateStorageLocationDto {
 
   @IsString()
   @IsIn(
-    [
-      'AMBIENT',
-      'COOL',
-      'COLD_CHAIN',
-      'FROZEN',
-      'CONTROLLED_ROOM_TEMPERATURE',
-    ],
+    ['AMBIENT', 'COOL', 'COLD_CHAIN', 'FROZEN', 'CONTROLLED_ROOM_TEMPERATURE'],
     {
       message:
         'Storage condition must be AMBIENT, COOL, COLD_CHAIN, FROZEN, or CONTROLLED_ROOM_TEMPERATURE',

@@ -76,7 +76,8 @@ export class GatePassRepository {
       });
 
       const take = limit ? Number(limit) : undefined;
-      const skip = page && limit ? (Number(page) - 1) * Number(limit) : undefined;
+      const skip =
+        page && limit ? (Number(page) - 1) * Number(limit) : undefined;
 
       const data = await this.prisma.gatePass.findMany({
         where,

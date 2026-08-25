@@ -33,7 +33,8 @@ export class PackingMaterialService {
         linkedSpecification: dto.linkedSpecification?.trim() || null,
         uom: dto.uom.trim(),
         standardCost: Number(dto.standardCost) || 0.0,
-        minimumStock: dto.minimumStock !== undefined ? Number(dto.minimumStock) : 0.0,
+        minimumStock:
+          dto.minimumStock !== undefined ? Number(dto.minimumStock) : 0.0,
         storageCondition: dto.storageCondition?.trim() || 'Ambient',
         isActive: dto.isActive !== undefined ? dto.isActive : true,
       },
@@ -74,14 +75,27 @@ export class PackingMaterialService {
     }
 
     // Counts for dashboard tabs
-    const [totalCount, activeCount, inactiveCount, primaryCount, secondaryCount] =
-      await Promise.all([
-        this.prisma.packingMaterial.count({ where }),
-        this.prisma.packingMaterial.count({ where: { ...where, isActive: true } }),
-        this.prisma.packingMaterial.count({ where: { ...where, isActive: false } }),
-        this.prisma.packingMaterial.count({ where: { ...where, type: 'PRIMARY' } }),
-        this.prisma.packingMaterial.count({ where: { ...where, type: 'SECONDARY' } }),
-      ]);
+    const [
+      totalCount,
+      activeCount,
+      inactiveCount,
+      primaryCount,
+      secondaryCount,
+    ] = await Promise.all([
+      this.prisma.packingMaterial.count({ where }),
+      this.prisma.packingMaterial.count({
+        where: { ...where, isActive: true },
+      }),
+      this.prisma.packingMaterial.count({
+        where: { ...where, isActive: false },
+      }),
+      this.prisma.packingMaterial.count({
+        where: { ...where, type: 'PRIMARY' },
+      }),
+      this.prisma.packingMaterial.count({
+        where: { ...where, type: 'SECONDARY' },
+      }),
+    ]);
 
     const take = limit && limit > 0 ? limit : undefined;
     const skip = page && limit && page > 0 ? (page - 1) * limit : undefined;
@@ -124,7 +138,10 @@ export class PackingMaterialService {
     const existing = await this.findOne(id);
 
     let formattedCode = existing.materialCode;
-    if (dto.materialCode && dto.materialCode.trim().toUpperCase() !== existing.materialCode) {
+    if (
+      dto.materialCode &&
+      dto.materialCode.trim().toUpperCase() !== existing.materialCode
+    ) {
       formattedCode = dto.materialCode.trim().toUpperCase();
       const duplicate = await this.prisma.packingMaterial.findUnique({
         where: { materialCode: formattedCode },
@@ -141,13 +158,25 @@ export class PackingMaterialService {
       data: {
         materialCode: formattedCode,
         ...(dto.type !== undefined && { type: dto.type.toUpperCase() }),
-        ...(dto.description !== undefined && { description: dto.description.trim() }),
-        ...(dto.approvedSuppliers !== undefined && { approvedSuppliers: dto.approvedSuppliers }),
-        ...(dto.linkedSpecification !== undefined && { linkedSpecification: dto.linkedSpecification?.trim() || null }),
+        ...(dto.description !== undefined && {
+          description: dto.description.trim(),
+        }),
+        ...(dto.approvedSuppliers !== undefined && {
+          approvedSuppliers: dto.approvedSuppliers,
+        }),
+        ...(dto.linkedSpecification !== undefined && {
+          linkedSpecification: dto.linkedSpecification?.trim() || null,
+        }),
         ...(dto.uom !== undefined && { uom: dto.uom.trim() }),
-        ...(dto.standardCost !== undefined && { standardCost: Number(dto.standardCost) || 0.0 }),
-        ...(dto.minimumStock !== undefined && { minimumStock: Number(dto.minimumStock) || 0.0 }),
-        ...(dto.storageCondition !== undefined && { storageCondition: dto.storageCondition?.trim() || 'Ambient' }),
+        ...(dto.standardCost !== undefined && {
+          standardCost: Number(dto.standardCost) || 0.0,
+        }),
+        ...(dto.minimumStock !== undefined && {
+          minimumStock: Number(dto.minimumStock) || 0.0,
+        }),
+        ...(dto.storageCondition !== undefined && {
+          storageCondition: dto.storageCondition?.trim() || 'Ambient',
+        }),
         ...(dto.isActive !== undefined && { isActive: dto.isActive }),
       },
     });

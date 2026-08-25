@@ -171,7 +171,9 @@ export class ProductCategoryService {
     });
 
     if (!category) {
-      throw new NotFoundException(`Product Category with ID '${id}' not found.`);
+      throw new NotFoundException(
+        `Product Category with ID '${id}' not found.`,
+      );
     }
 
     return category;
@@ -209,9 +211,13 @@ export class ProductCategoryService {
     const updated = await this.prisma.productCategory.update({
       where: { id },
       data: {
-        ...(dto.categoryCode && { categoryCode: dto.categoryCode.trim().toUpperCase() }),
+        ...(dto.categoryCode && {
+          categoryCode: dto.categoryCode.trim().toUpperCase(),
+        }),
         ...(dto.categoryName && { categoryName: dto.categoryName.trim() }),
-        ...(dto.description !== undefined && { description: dto.description?.trim() || null }),
+        ...(dto.description !== undefined && {
+          description: dto.description?.trim() || null,
+        }),
         ...(dto.isActive !== undefined && { isActive: dto.isActive }),
       },
       include: {
