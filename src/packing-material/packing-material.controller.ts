@@ -8,23 +8,30 @@ import {
   Delete,
   Query,
   ParseUUIDPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { PackingMaterialService } from './packing-material.service';
 import { CreatePackingMaterialDto } from './dto/create-packing-material.dto';
 import { UpdatePackingMaterialDto } from './dto/update-packing-material.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { PermissionGuard } from '../casl/guards/permission.guard';
+import { RequirePermission } from '../casl/decorators/require-permission.decorator';
 
 @Controller('packing-material')
+@UseGuards(JwtAuthGuard, PermissionGuard)
 export class PackingMaterialController {
   constructor(
     private readonly packingMaterialService: PackingMaterialService,
   ) {}
 
   @Post()
+  @RequirePermission('create', 'packing_material')
   create(@Body() createDto: CreatePackingMaterialDto) {
     return this.packingMaterialService.create(createDto);
   }
 
   @Get()
+  @RequirePermission('read', 'packing_material')
   findAll(
     @Query('search') search?: string,
     @Query('type') type?: string,
@@ -44,11 +51,13 @@ export class PackingMaterialController {
   }
 
   @Get(':id')
+  @RequirePermission('read', 'packing_material')
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.packingMaterialService.findOne(id);
   }
 
   @Patch(':id')
+  @RequirePermission('update', 'packing_material')
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateDto: UpdatePackingMaterialDto,
@@ -57,6 +66,7 @@ export class PackingMaterialController {
   }
 
   @Delete(':id')
+  @RequirePermission('delete', 'packing_material')
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.packingMaterialService.remove(id);
   }

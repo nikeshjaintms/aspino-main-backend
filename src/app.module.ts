@@ -16,10 +16,14 @@ import { UomModule } from './uom/uom.module';
 import { PackingMaterialModule } from './packing-material/packing-material.module';
 import { QcSpecificationModule } from './qc-specification/qc-specification.module';
 import { StorageLocationModule } from './storage-location/storage-location.module';
+import { CaslModule } from './casl/casl.module';
+import { RolesModule } from './roles/roles.module';
 
 @Module({
   imports: [
     PrismaModule,
+    CaslModule,
+    RolesModule,
     UsersModule,
     AuthModule,
     GatePassModule,

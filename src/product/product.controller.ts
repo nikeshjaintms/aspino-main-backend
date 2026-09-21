@@ -8,21 +8,28 @@ import {
   Delete,
   Query,
   ParseUUIDPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { PermissionGuard } from '../casl/guards/permission.guard';
+import { RequirePermission } from '../casl/decorators/require-permission.decorator';
 
 @Controller('product')
+@UseGuards(JwtAuthGuard, PermissionGuard)
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Post()
+  @RequirePermission('create', 'product')
   create(@Body() createDto: CreateProductDto) {
     return this.productService.create(createDto);
   }
 
   @Get()
+  @RequirePermission('read', 'product')
   findAll(
     @Query('search') search?: string,
     @Query('categoryId') categoryId?: string,
@@ -44,11 +51,13 @@ export class ProductController {
   }
 
   @Get(':id')
+  @RequirePermission('read', 'product')
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.productService.findOne(id);
   }
 
   @Patch(':id')
+  @RequirePermission('update', 'product')
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateDto: UpdateProductDto,
@@ -57,6 +66,7 @@ export class ProductController {
   }
 
   @Delete(':id')
+  @RequirePermission('delete', 'product')
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.productService.remove(id);
   }

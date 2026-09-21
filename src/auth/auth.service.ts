@@ -7,6 +7,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UserRepository } from '../users/repositories/user.repository';
+import { CaslAbilityFactory } from '../casl/casl-ability.factory';
 import { AdminLoginDto } from './dto/admin-login.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
@@ -18,10 +19,11 @@ export class AuthService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly jwtService: JwtService,
+    private readonly caslAbilityFactory: CaslAbilityFactory,
   ) {}
 
   /**
-   * Admin Login ONLY
+   * User Login with dynamic CASL permission loading and GatePass app access verification
    */
   async loginAdmin(loginDto: AdminLoginDto) {
     const { email, password } = loginDto;
@@ -31,35 +33,80 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    if (user.role !== 'ADMIN') {
-      throw new UnauthorizedException(
-        'Access denied. Only Admin accounts can log in here.',
-      );
-    }
-
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    const ability = await this.caslAbilityFactory.createForUser(user.id);
+    const gatepassSubjects = [
+      'all',
+      'app.gatepass',
+      'gatepass',
+      'pass_category',
+      'visitor',
+      'supplier',
+      'vendor',
+      'customer',
+      'bank',
+      'product',
+      'product_category',
+      'product_sub_category',
+      'uom',
+      'packing_material',
+      'qc_specification',
+      'storage_location',
+      'users',
+      'roles',
+      'permissions',
+      'audit',
+    ];
+    const hasGatePassAccess =
+      ability.can('manage', 'all') ||
+      ability.can('read', 'app.gatepass') ||
+      ability.rules.some((rule) =>
+        gatepassSubjects.includes(rule.subject as string),
+      );
+
+    if (!hasGatePassAccess) {
+      throw new UnauthorizedException(
+        'Access denied: You do not have permission to access Gate Pass ERP.',
+      );
+    }
+
     const payload = {
       sub: user.id,
       email: user.email,
-      role: user.role,
+      role: user.roleRelation ? user.roleRelation.name : user.role,
     };
 
     const accessToken = await this.jwtService.signAsync(payload);
+    const permissionData =
+      await this.caslAbilityFactory.getUserPermissionsPayload(user.id);
 
     return {
-      message: 'Admin login successful',
+      message: 'Login successful',
       access_token: accessToken,
       admin: {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role,
+        role: user.roleRelation ? user.roleRelation.name : user.role,
+        roleDisplayName: user.roleRelation?.displayName || user.role,
       },
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.roleRelation ? user.roleRelation.name : user.role,
+        roleDisplayName: user.roleRelation?.displayName || user.role,
+      },
+      ...permissionData,
     };
+  }
+
+  async getUserPermissions(userId: string) {
+    return this.caslAbilityFactory.getUserPermissionsPayload(userId);
   }
 
   /**

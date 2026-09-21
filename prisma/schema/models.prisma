@@ -8,13 +8,59 @@
 // ══════════════════════════════════════════════════════════════
 
 model User {
-  id        String    @id @default(uuid())
-  name      String
-  email     String    @unique
-  password  String
-  role      String    @default("USER") // ADMIN, HR, EMPLOYEE
-  createdAt DateTime  @default(now())
-  employee  Employee?
+  id           String        @id @default(uuid())
+  name         String
+  email        String        @unique
+  password     String
+  role         String        @default("USER") // ADMIN, HR, EMPLOYEE
+  roleId       String?
+  roleRelation Role?         @relation(fields: [roleId], references: [id], onDelete: SetNull)
+  createdAt    DateTime      @default(now())
+  employee     Employee?
+}
+
+model Role {
+  id          String           @id @default(uuid())
+  name        String           @unique // e.g. "SUPER_ADMIN", "HR_MANAGER", "SECURITY", "EMPLOYEE"
+  displayName String           // e.g. "Super Admin", "HR Manager", "Security Officer"
+  description String?
+  isSystem    Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  users       User[]
+  permissions RolePermission[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String           @id @default(uuid())
+  application String           // "GLOBAL", "HRMS", "GATEPASS"
+  module      String           // "employee", "attendance", "recruitment", "gatepass", "roles", etc.
+  action      String           // "read", "create", "update", "delete", "manage", "approve", "reject", "export", "import"
+  name        String           // Human readable e.g. "Create Employee"
+  description String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  roles       RolePermission[]
+
+  @@unique([application, module, action])
+  @@index([application, module])
+  @@map("permissions")
+}
+
+model RolePermission {
+  id           String     @id @default(uuid())
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+  @@map("role_permissions")
 }
 
 

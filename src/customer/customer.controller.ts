@@ -8,21 +8,28 @@ import {
   Delete,
   Query,
   ParseUUIDPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { CustomerService } from './customer.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { PermissionGuard } from '../casl/guards/permission.guard';
+import { RequirePermission } from '../casl/decorators/require-permission.decorator';
 
 @Controller('customer')
+@UseGuards(JwtAuthGuard, PermissionGuard)
 export class CustomerController {
   constructor(private readonly customerService: CustomerService) {}
 
   @Post()
+  @RequirePermission('create', 'customer')
   create(@Body() createCustomerDto: CreateCustomerDto) {
     return this.customerService.create(createCustomerDto);
   }
 
   @Get()
+  @RequirePermission('read', 'customer')
   findAll(
     @Query('search') search?: string,
     @Query('type') type?: string,
@@ -42,11 +49,13 @@ export class CustomerController {
   }
 
   @Get(':id')
+  @RequirePermission('read', 'customer')
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.customerService.findOne(id);
   }
 
   @Patch(':id')
+  @RequirePermission('update', 'customer')
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateCustomerDto: UpdateCustomerDto,
@@ -55,6 +64,7 @@ export class CustomerController {
   }
 
   @Delete(':id')
+  @RequirePermission('delete', 'customer')
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.customerService.remove(id);
   }

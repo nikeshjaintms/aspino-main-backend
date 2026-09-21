@@ -8,21 +8,28 @@ import {
   ParseUUIDPipe,
   Patch,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { GatePassService } from './gate-pass.service';
 import { CreateGatePassDto } from './dto/create-gate-pass.dto';
 import type { Response } from 'express';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { PermissionGuard } from '../casl/guards/permission.guard';
+import { RequirePermission } from '../casl/decorators/require-permission.decorator';
 
 @Controller('gate-pass')
+@UseGuards(JwtAuthGuard, PermissionGuard)
 export class GatePassController {
   constructor(private readonly service: GatePassService) {}
 
   @Post()
+  @RequirePermission('create', 'gatepass')
   async create(@Body() dto: CreateGatePassDto) {
     return this.service.createGatePass(dto);
   }
 
   @Get()
+  @RequirePermission('read', 'gatepass')
   async findAll(
     @Query('type') type?: string,
     @Query('search') search?: string,
@@ -35,6 +42,7 @@ export class GatePassController {
   }
 
   @Get(':id/pdf')
+  @RequirePermission('export', 'gatepass')
   async downloadPdf(
     @Param('id', ParseUUIDPipe) id: string,
     @Res() res: Response,
@@ -52,16 +60,19 @@ export class GatePassController {
   }
 
   @Get(':id')
+  @RequirePermission('read', 'gatepass')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.service.getGatePassById(id);
   }
 
   @Patch(':id/timeout')
+  @RequirePermission('update', 'gatepass')
   async recordTimeOut(@Param('id', ParseUUIDPipe) id: string) {
     return this.service.recordTimeOut(id);
   }
 
   @Patch(':id/link-grn-po')
+  @RequirePermission('update', 'gatepass')
   async linkGrnPo(
     @Param('id', ParseUUIDPipe) id: string,
     @Body('poNumber') poNumber?: string,

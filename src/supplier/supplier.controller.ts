@@ -8,21 +8,28 @@ import {
   Delete,
   Query,
   ParseUUIDPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { SupplierService } from './supplier.service';
 import { CreateSupplierDto } from './dto/create-supplier.dto';
 import { UpdateSupplierDto } from './dto/update-supplier.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { PermissionGuard } from '../casl/guards/permission.guard';
+import { RequirePermission } from '../casl/decorators/require-permission.decorator';
 
 @Controller('supplier')
+@UseGuards(JwtAuthGuard, PermissionGuard)
 export class SupplierController {
   constructor(private readonly supplierService: SupplierService) {}
 
   @Post()
+  @RequirePermission('create', 'supplier')
   create(@Body() createSupplierDto: CreateSupplierDto) {
     return this.supplierService.create(createSupplierDto);
   }
 
   @Get()
+  @RequirePermission('read', 'supplier')
   findAll(
     @Query('search') search?: string,
     @Query('page') page?: string,
@@ -34,11 +41,13 @@ export class SupplierController {
   }
 
   @Get(':id')
+  @RequirePermission('read', 'supplier')
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.supplierService.findOne(id);
   }
 
   @Patch(':id')
+  @RequirePermission('update', 'supplier')
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateSupplierDto: UpdateSupplierDto,
@@ -47,6 +56,7 @@ export class SupplierController {
   }
 
   @Delete(':id')
+  @RequirePermission('delete', 'supplier')
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.supplierService.remove(id);
   }

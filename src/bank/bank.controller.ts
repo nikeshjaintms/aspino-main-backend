@@ -8,21 +8,28 @@ import {
   Delete,
   Query,
   ParseUUIDPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { BankService } from './bank.service';
 import { CreateBankDto } from './dto/create-bank.dto';
 import { UpdateBankDto } from './dto/update-bank.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { PermissionGuard } from '../casl/guards/permission.guard';
+import { RequirePermission } from '../casl/decorators/require-permission.decorator';
 
 @Controller('bank')
+@UseGuards(JwtAuthGuard, PermissionGuard)
 export class BankController {
   constructor(private readonly bankService: BankService) {}
 
   @Post()
+  @RequirePermission('create', 'bank')
   create(@Body() createBankDto: CreateBankDto) {
     return this.bankService.create(createBankDto);
   }
 
   @Get()
+  @RequirePermission('read', 'bank')
   findAll(
     @Query('search') search?: string,
     @Query('page') page?: string,
@@ -34,11 +41,13 @@ export class BankController {
   }
 
   @Get(':id')
+  @RequirePermission('read', 'bank')
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.bankService.findOne(id);
   }
 
   @Patch(':id')
+  @RequirePermission('update', 'bank')
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateBankDto: UpdateBankDto,
@@ -47,6 +56,7 @@ export class BankController {
   }
 
   @Delete(':id')
+  @RequirePermission('delete', 'bank')
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.bankService.remove(id);
   }

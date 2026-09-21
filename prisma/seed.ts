@@ -11,32 +11,63 @@ const prisma = new PrismaClient({ adapter });
 
 async function main() {
   const adminEmail = 'admin@aspino.com';
-  const adminPassword = 'admin123';
+  const adminPassword = 'Hr@123';
   const adminName = 'Aspino Admin';
 
-  console.log('Seeding User table with Admin user...');
+  // ─── Seed SUPER_ADMIN Role ─────────────────────────────────────────────────
+  console.log('Seeding SUPER_ADMIN role and permissions...');
+
+  const superAdminRole = await prisma.role.upsert({
+    where: { name: 'SUPER_ADMIN' },
+    update: { displayName: 'Super Admin', description: 'Full system access with all permissions' },
+    create: { name: 'SUPER_ADMIN', displayName: 'Super Admin', description: 'Full system access with all permissions' },
+  });
+  console.log(`  └─ SUPER_ADMIN role ready: ${superAdminRole.id}`);
+
+  const manageAllPerm = await prisma.permission.upsert({
+    where: { application_module_action: { application: 'gatepass', module: 'all', action: 'manage' } },
+    update: { name: 'manage-all', description: 'Full system access — Super Admin only' },
+    create: { application: 'gatepass', module: 'all', action: 'manage', name: 'manage-all', description: 'Full system access — Super Admin only' },
+  });
+  console.log(`  └─ all:manage permission ready: ${manageAllPerm.id}`);
+
+  await prisma.rolePermission.upsert({
+    where: { roleId_permissionId: { roleId: superAdminRole.id, permissionId: manageAllPerm.id } },
+    update: {},
+    create: { roleId: superAdminRole.id, permissionId: manageAllPerm.id },
+  });
+  console.log('  └─ SUPER_ADMIN linked to all:manage permission');
+
+  // ─── Seed Admin User ───────────────────────────────────────────────────────
+  console.log('Seeding admin user...');
 
   const existingUser = await prisma.user.findUnique({
     where: { email: adminEmail },
   });
 
+  const hashedPassword = await bcrypt.hash(adminPassword, 10);
+
   if (!existingUser) {
-    const hashedPassword = await bcrypt.hash(adminPassword, 10);
     await prisma.user.create({
       data: {
         name: adminName,
         email: adminEmail,
         password: hashedPassword,
-        role: 'ADMIN',
+        role: 'SUPER_ADMIN',
+        roleId: superAdminRole.id,
       },
     });
-    console.log(`✅ Admin user created in User table!`);
+    console.log(`✅ Admin user created: ${adminEmail}`);
   } else {
     await prisma.user.update({
       where: { email: adminEmail },
-      data: { role: 'ADMIN' },
+      data: {
+        password: hashedPassword,
+        role: 'SUPER_ADMIN',
+        roleId: superAdminRole.id,
+      },
     });
-    console.log(`ℹ️ Admin user updated in User table (${adminEmail})`);
+    console.log(`ℹ️ Admin user updated: ${adminEmail}`);
   }
 
   // Seed Pass Categories CRUD Table
